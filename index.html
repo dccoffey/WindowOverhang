@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Power of Shading</title>
+  <link rel="icon" href="logo.png" type="image/png">
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-CTPVSRBX4F"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-CTPVSRBX4F');
+  </script>
+  <link rel="stylesheet" href="css/styles.css?v=28">
+</head>
+<body>
+
+  <!-- ─── HEADER ───────────────────────────────────────────────────── -->
+  <header id="app-header">
+    <div class="header-row">
+      <img class="app-logo" src="logo.png" alt="" onerror="this.style.display='none'">
+      <div>
+        <h1>The Power of Shading</h1>
+        <p class="subtitle">Window Overhang and Awning Design Guide</p>
+      </div>
+      <button class="help-toggle-btn" onclick="document.getElementById('help-detail').classList.toggle('collapsed')">How to use</button>
+    </div>
+    <p id="help-detail" class="help-text collapsed">Adjust the sliders below to change your window dimensions, awning size, location, and wall orientation. The 3D view updates in real time so you can see how shading changes with time of day and season. Use the quick-jump buttons to compare summer vs. winter performance, or hit Animate Day to watch the sun travel across the sky.</p>
+    <audio id="bg-music" loop src="Awning.mp3"></audio>
+    <audio id="bg-podcast" src="AwningPodcast.m4a"></audio>
+  </header>
+
+  <!-- ─── TAB BAR ──────────────────────────────────────────────────── -->
+  <nav id="tab-bar">
+    <button class="tab-btn active" data-tab="simulator">Simulator</button>
+    <button class="tab-btn" data-tab="methods">Methods &amp; Sources</button>
+  </nav>
+
+  <!-- ═══════════ SIMULATOR TAB ═══════════════════════════════════════ -->
+  <div id="simulator-tab" class="tab-content active">
+
+    <!-- Main Side-by-Side Layout -->
+    <div id="main-layout">
+
+      <!-- LEFT: 3D View + Date/Time + Settings below -->
+      <div id="viz-3d-column">
+        <div id="viz-3d-container">
+          <div id="three-canvas-wrap">
+            <div id="loading-overlay">
+              <div class="loader-content">
+                <div class="loader-spinner"></div>
+                <div class="loader-text">Loading 3D view...</div>
+              </div>
+            </div>
+          </div>
+          <button id="music-toggle" title="Toggle background music" onclick="var a=document.getElementById('bg-music'),p=document.getElementById('bg-podcast'),pb=document.getElementById('podcast-toggle');if(a.paused){a.play();this.classList.add('active');this.textContent='\u266B';p.pause();pb.classList.remove('active');pb.textContent='\uD83C\uDFA7'}else{a.pause();this.classList.remove('active');this.textContent='\u266A'}">&#9834;</button>
+          <button id="rays-toggle" title="Toggle light beam visualization" onclick="if(window.App._scene3d){var on=this.classList.toggle('active');window.App._scene3d.setLightBeamVisible(on);this.textContent=on?'\u2600':'\u263C'}">&#9788;</button>
+          <button id="podcast-toggle" title="Toggle podcast" onclick="var p=document.getElementById('bg-podcast'),a=document.getElementById('bg-music'),mb=document.getElementById('music-toggle');if(p.paused){p.play();this.classList.add('active');this.textContent='\uD83C\uDF99\uFE0F';a.pause();mb.classList.remove('active');mb.textContent='\u266A'}else{p.pause();this.classList.remove('active');this.textContent='\uD83C\uDFA7'}">&#127911;</button>
+        </div>
+        <!-- Controls below 3D view -->
+        <div id="datetime-controls">
+          <fieldset class="control-group compact primary">
+            <legend>Date &amp; Time</legend>
+            <div class="control-row">
+              <label>Month <span class="val" id="val-month">Feb</span>
+                <input type="range" id="slider-month" min="1" max="12" step="1" value="2">
+              </label>
+              <label>Day <span class="val" id="val-day">20</span>
+                <input type="range" id="slider-day" min="1" max="28" step="1" value="20">
+              </label>
+              <label>Hour <span class="val" id="val-hour">13:00</span> <span class="val-gmt" id="val-hour-gmt"></span>
+                <input type="range" id="slider-hour" min="5" max="20" step="0.5" value="13">
+              </label>
+            </div>
+            <div class="control-row button-row">
+              <button class="quick-btn" data-month="6" data-day="21" data-hour="12">Summer Solstice</button>
+              <button class="quick-btn" data-month="12" data-day="21" data-hour="12">Winter Solstice</button>
+              <button class="quick-btn" data-month="3" data-day="21" data-hour="12">Equinox</button>
+              <button class="anim-btn" id="btn-animate-day">&#9654; Animate Day</button>
+              <button class="anim-btn" id="btn-animate-year">&#9654; Animate Year</button>
+            </div>
+          </fieldset>
+
+          <!-- Settings row: Orientation + Glazing -->
+          <div class="settings-row settings-row-2col">
+            <fieldset class="control-group compact">
+              <legend>Orientation</legend>
+              <div class="control-row orientation-row">
+                <label>Bearing <input type="number" id="input-orientation" value="180" min="0" max="360" step="1">&deg;</label>
+              </div>
+              <div class="snap-buttons">
+                <button class="snap-btn" data-angle="0">N</button>
+                <button class="snap-btn" data-angle="45">NE</button>
+                <button class="snap-btn" data-angle="90">E</button>
+                <button class="snap-btn" data-angle="135">SE</button>
+                <button class="snap-btn" data-angle="180">S</button>
+                <button class="snap-btn" data-angle="225">SW</button>
+                <button class="snap-btn" data-angle="270">W</button>
+                <button class="snap-btn" data-angle="315">NW</button>
+              </div>
+            </fieldset>
+
+            <fieldset class="control-group compact">
+              <legend>Glazing <button class="info-btn" onclick="var p=document.getElementById('glazing-info-text');p.classList.toggle('section-hidden')" title="What is SHGC?">&#9432;</button></legend>
+              <div id="glazing-body">
+                <div class="control-row">
+                  <select id="select-glazing">
+                    <option value="Single Clear">Single Clear (SHGC 0.86)</option>
+                    <option value="Double Clear" selected>Double Clear (SHGC 0.76)</option>
+                    <option value="Double Low-E">Double Low-E (SHGC 0.42)</option>
+                    <option value="Triple Low-E">Triple Low-E (SHGC 0.27)</option>
+                  </select>
+                </div>
+                <p id="glazing-info-text" class="info-text section-hidden">SHGC measures how much solar radiation passes through the glass (0–1). Lower = less solar heat enters.</p>
+              </div>
+            </fieldset>
+          </div>
+
+          <fieldset class="control-group compact" id="cross-section-fieldset">
+            <legend>2D Cross-Section <button class="section-toggle" onclick="var w=document.getElementById('cross-section-wrap');w.classList.toggle('section-hidden');this.textContent=w.classList.contains('section-hidden')?'\u25B6':'\u25BC'">&#9654;</button></legend>
+            <div id="cross-section-wrap" class="section-hidden">
+              <svg id="cross-section-svg" viewBox="0 0 500 350" preserveAspectRatio="xMidYMid meet"></svg>
+            </div>
+          </fieldset>
+        </div>
+      </div>
+
+      <!-- RIGHT: Sidebar — Location + Window + Awning -->
+      <div id="sidebar">
+
+        <!-- Location -->
+        <fieldset class="control-group compact panel-location">
+          <legend>Location</legend>
+          <div class="control-row">
+            <label>Lat <input type="number" id="input-lat" value="39.7" min="-90" max="90" step="0.1"></label>
+            <label>Lng <input type="number" id="input-lng" value="-105.0" min="-180" max="180" step="0.1"></label>
+          </div>
+          <div class="control-row">
+            <label><select id="select-city"><option value="">— Custom —</option></select></label>
+          </div>
+        </fieldset>
+
+        <!-- Window -->
+        <fieldset class="control-group compact panel-window">
+          <legend>Window <button class="unit-toggle-btn" id="unit-toggle" title="Switch ft / m">ft ⇄ m</button></legend>
+          <div class="dim-grid dim-grid-2col">
+            <div class="dim-item">
+              <div class="dim-header">
+                <span class="dim-label">Width</span>
+                <span class="dim-value"><span class="val editable-val" id="val-ww" data-slider="slider-ww" data-key="windowWidth" title="Click to type a value">4.0</span> <span class="unit-label">ft</span></span>
+              </div>
+              <input type="range" id="slider-ww" min="1" max="10" step="0.5" value="4">
+            </div>
+            <div class="dim-item">
+              <div class="dim-header">
+                <span class="dim-label">Height</span>
+                <span class="dim-value"><span class="val editable-val" id="val-wh" data-slider="slider-wh" data-key="windowHeight" title="Click to type a value">5.0</span> <span class="unit-label">ft</span></span>
+              </div>
+              <input type="range" id="slider-wh" min="1" max="8" step="0.5" value="5">
+            </div>
+            <div class="dim-item dim-full">
+              <div class="dim-header">
+                <span class="dim-label">Sill</span>
+                <span class="dim-value"><span class="val editable-val" id="val-sill" data-slider="slider-sill" data-key="sillHeight" title="Click to type a value">3.0</span> <span class="unit-label">ft</span></span>
+              </div>
+              <input type="range" id="slider-sill" min="0" max="5" step="0.5" value="3">
+            </div>
+          </div>
+          <div class="dim-presets">
+            <button class="door-preset-btn" data-preset="glass-door" title="3ft × 6.8ft glass door at floor level">🚪 Glass Door</button>
+            <button class="door-preset-btn" data-preset="sliding-door" title="6ft × 6.8ft sliding glass door at floor level">🚪🚪 Sliding Door</button>
+          </div>
+        </fieldset>
+
+        <!-- Awning -->
+        <fieldset class="control-group compact awning-panel" id="awning-below-datetime">
+          <legend>Awning</legend>
+          <div class="dim-grid dim-grid-2col">
+            <div class="dim-item">
+              <div class="dim-header">
+                <span class="dim-label">Depth</span>
+                <span class="dim-value"><span class="val editable-val" id="val-ad" data-slider="slider-ad" data-key="awningDepth" title="Click to type a value">2.00</span> <span class="unit-label">ft</span></span>
+                <label class="lock-toggle" title="Lock depth when optimizing"><input type="checkbox" id="lock-depth"><span class="lock-icon">&#128274;</span></label>
+              </div>
+              <input type="range" id="slider-ad" min="0" max="6" step="0.25" value="2">
+            </div>
+            <div class="dim-item">
+              <div class="dim-header">
+                <span class="dim-label">Gap</span>
+                <span class="dim-value"><span class="val editable-val" id="val-ag" data-slider="slider-ag" data-key="awningGap" title="Click to type a value">0.50</span> <span class="unit-label">ft</span></span>
+                <label class="lock-toggle" title="Lock gap when optimizing"><input type="checkbox" id="lock-gap"><span class="lock-icon">&#128274;</span></label>
+              </div>
+              <input type="range" id="slider-ag" min="0" max="2" step="0.25" value="0.5">
+            </div>
+            <div class="dim-item dim-full">
+              <div class="dim-header">
+                <span class="dim-label">Width+</span>
+                <span class="dim-value"><span class="val editable-val" id="val-aw" data-slider="slider-aw" data-key="awningWidthExtra" title="Click to type a value">2.0</span> <span class="unit-label val-total-width" id="val-aw-total">ft (6.0 total)</span></span>
+                <label class="lock-toggle" title="Lock width when optimizing"><input type="checkbox" id="lock-width"><span class="lock-icon">&#128274;</span></label>
+              </div>
+              <input type="range" id="slider-aw" min="0" max="9" step="0.5" value="2">
+            </div>
+          </div>
+          <div class="optimize-row">
+            <div class="optimize-method-row">
+              <label class="opt-method-label" title="NREL/ASHRAE: Standard geometric depth for all orientations"><input type="radio" name="opt-method" value="nrel" checked> <span>NREL/ASHRAE<span class="opt-asterisk" id="opt-asterisk">*</span></span></label>
+              <label class="opt-method-label" title="Building America: South-sized depth for E/W walls + supplementary strategies"><input type="radio" name="opt-method" value="ba"> <span>Bldg America</span></label>
+              <label class="opt-method-label" title="SusDesign: South-facing only; no E/W recommendation"><input type="radio" name="opt-method" value="susdesign"> <span>SusDesign</span></label>
+            </div>
+            <button class="optimize-btn" id="btn-optimize-awning">&#9733; Optimize Unlocked</button>
+            <span class="optimize-note">Lock params to keep, then optimize the rest</span>
+          </div>
+        </fieldset>
+
+        <!-- Orientation footnote (shown for non-south-facing walls) -->
+        <div class="awning-footnote section-hidden" id="awning-footnote">
+          <p class="footnote-text" id="awning-footnote-text"></p>
+        </div>
+
+      </div><!-- /sidebar -->
+
+    </div><!-- /main-layout -->
+
+    <!-- ─── METRICS PANEL (full width below) ───────────────────────── -->
+    <div id="metrics-panel">
+      <h3>Current Conditions <button class="section-toggle" onclick="var b=document.getElementById('metrics-current');b.classList.toggle('section-hidden');this.textContent=b.classList.contains('section-hidden')?'\u25B6':'\u25BC'">&#9660;</button></h3>
+      <div class="metrics-grid" id="metrics-current">
+        <div class="metric" id="metric-alt"><span class="metric-label">Sun Altitude</span><span class="metric-value" id="m-alt">—</span></div>
+        <div class="metric" id="metric-az"><span class="metric-label">Sun Azimuth</span><span class="metric-value" id="m-az">—</span></div>
+        <div class="metric" id="metric-hsa" title="Horizontal Shadow Angle: the angular difference between the sun's compass direction and the wall's facing direction. When |HSA| > 90°, the sun is behind the wall."><span class="metric-label">HSA</span><span class="metric-value" id="m-hsa">—</span></div>
+        <div class="metric" id="metric-vsa" title="Vertical Shadow Angle (Profile Angle): the apparent sun altitude in a plane perpendicular to the wall. This determines how far down the awning's shadow extends."><span class="metric-label">VSA (Profile)</span><span class="metric-value" id="m-vsa">—</span></div>
+        <div class="metric" id="metric-shade" title="Percentage of the window area that is covered by the awning's shadow. Higher is better in summer, lower is better in winter."><span class="metric-label">Window Shaded</span><span class="metric-value" id="m-shade">—</span></div>
+        <div class="metric" id="metric-floor" title="How far direct sunlight extends across the floor from the window wall. Deeper penetration means more solar heat entering the room."><span class="metric-label">Floor Penetration</span><span class="metric-value" id="m-floor">—</span></div>
+        <div class="metric" id="metric-shgc" title="Solar Heat Gain Coefficient adjusted for shading. Represents the fraction of solar energy passing through the window as heat (0 = fully blocked, 1 = fully transmitted)."><span class="metric-label">Effective SHGC</span><span class="metric-value" id="m-shgc">—</span></div>
+        <div class="metric" id="metric-pf" title="ASHRAE Projection Factor: awning depth divided by (gap + window height). PF ≈ 0.5 is typical for effective summer shading. Used in building energy code compliance."><span class="metric-label">Projection Factor</span><span class="metric-value" id="m-pf">—</span></div>
+        <div class="metric" id="metric-heat" title="Approximate solar heat gain through the unshaded portion of the window in watts. Based on clear-sky direct normal irradiance (~1000 W/m²), useful for relative comparisons."><span class="metric-label">Solar Heat Gain</span><span class="metric-value" id="m-heat">—</span></div>
+      </div>
+
+      <h3>Annual Performance <button class="section-toggle" onclick="var b=document.getElementById('heatmap-container');b.classList.toggle('section-hidden');this.textContent=b.classList.contains('section-hidden')?'\u25B6':'\u25BC'">&#9654;</button></h3>
+      <div id="heatmap-container" class="section-hidden">
+        <svg id="heatmap-svg"></svg>
+      </div>
+      <div id="heatmap-tooltip" class="tooltip" style="display:none;"></div>
+
+      <h3>Recommendation</h3>
+      <div id="recommendation-text"></div>
+    </div>
+
+  </div><!-- /simulator-tab -->
+
+  <!-- ═══════════ METHODS & SOURCES TAB ═══════════════════════════════ -->
+  <div id="methods-tab" class="tab-content">
+    <div class="methods-content">
+
+      <h2>1. How This Tool Works</h2>
+      <p>This tool simulates how a horizontal awning or overhang above a window blocks direct sunlight at different times of day and year. It uses your geographic location to compute the exact position of the sun in the sky, then calculates the shadow cast by the awning onto the window and into the room using standard building science geometry.</p>
+      <p>The 3D visualization uses a <em>celestial hemisphere</em> &mdash; a model from astronomy that shows the sky as a dome over your building. The sun's daily path is drawn as an arc across this dome, and you can watch the sun travel along it as you change the time of day. Reference arcs for the summer and winter solstices show how the sun's path shifts throughout the year. Your room sits at the center of the dome on a compass rose, and you can rotate it to face any direction to see how orientation affects shading.</p>
+      <p>The goal is to help you choose an awning size that blocks unwanted solar heat gain in summer (when the sun is high) while still allowing beneficial sunlight in winter (when the sun is low). The tool provides both a visual 3D simulation and quantitative metrics including the percentage of your window that is shaded, how deep sunlight penetrates into your room, and an annual performance summary.</p>
+      <p>All calculations run entirely in your browser. No data is sent to any server.</p>
+
+      <h2>2. Solar Position Calculation</h2>
+      <p>The sun's position in the sky is defined by two angles:</p>
+      <ul>
+        <li><strong>Altitude</strong> &mdash; how high above the horizon (0&deg; at the horizon, 90&deg; directly overhead).</li>
+        <li><strong>Azimuth</strong> &mdash; compass direction (0&deg; = North, 90&deg; = East, 180&deg; = South, 270&deg; = West).</li>
+      </ul>
+      <p>These angles depend on your latitude, longitude, date, and time of day. They are determined by well-known astronomical formulas based on Earth's axial tilt (23.45&deg;) and orbital position.</p>
+      <p>This tool uses the <a href="https://github.com/mourner/suncalc" target="_blank" rel="noopener noreferrer">SunCalc.js</a> library by Vladimir Agafonkin, which implements the algorithms from Jean Meeus's <em>Astronomical Algorithms</em> &mdash; the standard reference used by observatories and solar energy professionals worldwide.</p>
+      <div class="formula-block">
+Sun Position = f(latitude, longitude, date, time)
+  &rarr; altitude (degrees above horizon)
+  &rarr; azimuth (compass bearing)
+      </div>
+
+      <h2>3. Shadow Geometry</h2>
+
+      <h3>Horizontal Shadow Angle (HSA)</h3>
+      <p>The angular difference between the sun's compass azimuth and the direction the wall faces. When the HSA exceeds &plusmn;90&deg;, the sun is behind the wall and no direct sunlight hits the window.</p>
+      <div class="formula-block">HSA = Sun Azimuth &minus; Wall Azimuth</div>
+      <p>This is computed for every time step and determines whether direct sun can reach the window at all.</p>
+
+      <h3>Vertical Shadow Angle (VSA) / Profile Angle</h3>
+      <p>The apparent altitude of the sun when viewed in a vertical plane perpendicular to the wall surface. This is the critical angle for horizontal overhangs &mdash; it determines how far down the shadow extends.</p>
+      <div class="formula-block">VSA = arctan( tan(altitude) / cos(HSA) )</div>
+      <p>VSA is always &ge; altitude when the sun is not perpendicular to the wall, because the sun's rays travel a longer apparent path across the overhang.</p>
+
+      <h3>Shadow on the Window</h3>
+      <div class="formula-block">Shadow depth = Awning depth &times; tan(VSA) &minus; Gap</div>
+      <p>The shadow starts at the top of the window and extends downward. If the shadow depth exceeds the window height, the entire window is shaded.</p>
+
+      <h3>Sunlight Penetration onto Floor</h3>
+      <div class="formula-block">Floor penetration = Sill height / tan(VSA)</div>
+      <p>Measured from the window wall inward. Lower sun angles produce deeper penetration.</p>
+
+      <h3>Lateral Shadow Offset</h3>
+      <div class="formula-block">Lateral offset = Awning depth &times; tan(HSA)</div>
+      <p>When the sun is not perpendicular to the wall, the shadow shifts sideways. This is especially important for east- and west-facing windows.</p>
+
+      <h3>Shading Fraction</h3>
+      <p>The percentage of window area in shadow, combining vertical and lateral components:</p>
+      <div class="formula-block">Shading Fraction = (shaded height / window height) &times; (shaded width / window width)</div>
+
+      <h3>Awning Optimization Algorithm</h3>
+      <p>The <strong>Optimize Unlocked</strong> button recommends optimal values for any awning dimensions that are not locked (depth, gap, and/or width extension). You can lock any parameter to its current slider value and the algorithm will optimize the remaining parameters around that constraint. This supports two common scenarios:</p>
+      <ul>
+        <li><strong>Fixed awning size:</strong> Lock the depth (e.g., you have an 18" awning) and optimize the gap (installation height) and width.</li>
+        <li><strong>Fixed location:</strong> Lock the gap (e.g., roof is 2' above the window) and optimize the depth and width.</li>
+      </ul>
+      <p>The methodology is adapted from <a href="https://susdesign.com/overhang_recs/" target="_blank" rel="noopener noreferrer">SusDesign's overhang recommendations</a>, which are derived from the <strong>NREL Solar Radiation Data Manual</strong> lookup tables, combined with our direct solar geometry calculations.</p>
+
+      <h4>Key Assumptions</h4>
+      <ul>
+        <li><strong>Summer goal:</strong> 100% window shading at solar noon on the design start date (a climate-dependent date before the summer solstice).</li>
+        <li><strong>Winter goal:</strong> 0% window shading at winter solstice noon, allowing maximum passive solar heating.</li>
+        <li><strong>Acceptable winter shade limit:</strong> A fixed awning is considered feasible if it blocks no more than 30% of the winter window area. Beyond 30%, a retractable awning is recommended.</li>
+        <li><strong>Width coverage:</strong> The width extension targets full window coverage at 10 AM and 2 PM on the summer solstice, with the horizontal shadow angle capped at 45&deg; (beyond which horizontal awnings are ineffective).</li>
+        <li><strong>Installation costs are not considered.</strong> The algorithm optimizes purely for solar geometry.</li>
+      </ul>
+
+      <h4>Climate Zone &amp; Design Date</h4>
+      <p>Rather than designing for summer solstice only, the algorithm picks a <strong>design start date</strong> &mdash; the date when full shading should begin &mdash; based on your latitude as a climate proxy:</p>
+      <ul>
+        <li><strong>Warm</strong> (|latitude| &lt; 28&deg;): shading needed from early spring (~80 days before solstice)</li>
+        <li><strong>Mixed</strong> (28&deg;&ndash;44&deg;): balanced (~May 1 at lat 40&deg;, scaling with latitude)</li>
+        <li><strong>Cool</strong> (|latitude| &gt; 44&deg;): shading needed only in peak summer (~20 days before solstice)</li>
+      </ul>
+      <p>This matches the SusDesign/NREL approach: warmer climates need shading earlier in the year, requiring deeper overhangs; cooler climates maximize winter solar gain.</p>
+
+      <h4>Gap (height above window)</h4>
+      <p>For equator-facing and near-equator walls, a non-zero gap is calculated so that the overhang&rsquo;s shadow at <strong>winter solstice noon exactly clears the window top</strong> (0% winter shade). This allows maximum passive solar heating in winter while the deeper overhang still blocks summer sun:</p>
+      <div class="formula-block">Gap = Depth &times; tan(Winter Solstice VSA at Noon)</div>
+      <p>For <strong>east/west walls</strong>, the gap is set to 0 (flush mount) because low-angle winter sun on these walls is minimal and the gap optimization provides little benefit. For retrofit installations, a practical minimum gap of 0.25 ft (3 in) is noted for mounting clearance.</p>
+
+      <h4>Depth</h4>
+      <p>Depth and gap are solved simultaneously. Full window shading at noon on the design start date requires:</p>
+      <div class="formula-block">Depth &times; tan(Design Date VSA) &minus; Gap = Window Height</div>
+      <p>Combined with the gap equation, this gives a single closed-form solution:</p>
+      <div class="formula-block">Depth = Window Height / (tan(Design Date VSA) &minus; tan(Winter VSA))
+Gap = Depth &times; tan(Winter VSA)</div>
+      <p>For east/west-facing walls, the algorithm instead scans daylight hours (6 AM&ndash;6 PM) on the summer solstice to find the hour when the sun is most perpendicular to the wall (minimum |HSA|), using flush-mount geometry:</p>
+      <div class="formula-block">Depth = Window Height / tan(VSA at Peak Sun Hour)</div>
+      <p>In all cases, depth is checked against the <strong>winter limit</strong> (max depth before &gt;30% winter shade). If exceeded, a retractable awning is recommended.</p>
+
+      <h4>Width Extension</h4>
+      <p>At solar noon on an equator-facing wall, the Horizontal Shadow Angle (HSA) is near zero and the shadow falls straight down &mdash; no lateral extension is needed. But in morning and afternoon, the sun&rsquo;s azimuth shifts the shadow sideways. The width extension ensures the awning shadow covers the full window width at 10 AM and 2 PM on the summer solstice:</p>
+      <div class="formula-block">Lateral offset = Depth &times; |tan(HSA)|
+Width extension = 2 &times; max(|offset at 10 AM|, |offset at 2 PM|)</div>
+      <p>The effective HSA is capped at 45&deg; for the width calculation. Beyond 45&deg; the sun is nearly parallel to the wall and a horizontal awning becomes ineffective &mdash; vertical fins or retractable solutions would be needed instead.</p>
+
+      <h4>Orientation-Specific Guidance</h4>
+      <p>The geometric methodology (depth = H / tan(VSA)) is the same for all non-north orientations, consistent with ASHRAE Standard 90.1 which treats all non-north orientations identically in its Projection Factor SHGC multiplier tables (Table 5.5.4.4.1). However, the practical effectiveness of horizontal overhangs varies significantly by orientation:</p>
+      <ul>
+        <li><strong>Equator-facing (S in NH, ±30°):</strong> The design-date methodology from SusDesign/NREL produces a depth and gap that achieves 100% summer shading while preserving 100% winter passive solar gain. Fixed overhangs are ideal for these walls because the large seasonal difference in sun altitude angle creates a natural "seasonal switch."</li>
+        <li><strong>Near-equator (±30°–60°):</strong> The same design-date methodology applies. Fixed overhangs remain effective, though asymmetric morning/afternoon sun exposure means the width extension is important.</li>
+        <li><strong>East/west-facing (±60°–120°):</strong> The NREL Solar Radiation Data Manual notes that <em>"overhangs are not particularly effective in preventing unwanted heat gain"</em> for east- and west-facing windows, because the sun is low in the sky when it strikes these walls. The full geometric depth is computed per the standard trigonometric formula, but may be impractically large. The tool presents the computed depth (capped at the slider maximum) and recommends supplementary strategies: vertical fins, retractable awnings, exterior solar screens, or vegetation.</li>
+        <li><strong>Pole-facing (N in NH, >±120°):</strong> These walls receive minimal direct sunlight. No awning is recommended, and the sliders are reset to zero.</li>
+      </ul>
+      <p>This approach follows the NREL/ASHRAE methodology of computing the same geometric shading for all orientations, while providing orientation-specific guidance on supplementary strategies, consistent with Building America (PNNL) best practices.</p>
+
+      <h4>Feasibility Assessment</h4>
+      <p>The algorithm checks whether the optimized depth fits within the <strong>winter shade limit</strong> &mdash; the maximum depth before the awning blocks more than 30% of the window in winter. If it does, a single fixed awning can achieve good summer shading while preserving winter passive solar gain. If the depth exceeds the limit, the display flags this as a trade-off &mdash; a retractable or seasonal solution may be needed.</p>
+
+      <h2>4. Energy Metrics</h2>
+
+      <h3>Solar Heat Gain Coefficient (SHGC)</h3>
+      <p>The fraction of solar energy that passes through a window as heat (0 = blocks everything, 1 = passes everything). Common values: single clear glass &asymp; 0.86, double clear &asymp; 0.76, double low-e &asymp; 0.42, triple low-e &asymp; 0.27.</p>
+      <div class="formula-block">Effective SHGC = Glass SHGC &times; (1 &minus; Shading Fraction)</div>
+
+      <h3>ASHRAE Projection Factor (PF)</h3>
+      <p>A simplified metric from ASHRAE Standard 90.1 used in building energy codes.</p>
+      <div class="formula-block">PF = Awning Depth / (Gap + Window Height)</div>
+      <p>PF = 0 means no overhang; PF &asymp; 0.5 is typical for effective summer shading; PF = 1.0 means the overhang extends as far as the full window-to-sill distance.</p>
+
+      <h3>Approximate Solar Heat Gain (Watts)</h3>
+      <p>Simplified estimate assuming ~1000 W/m&sup2; clear-sky direct normal irradiance, modulated by angle of incidence and shading fraction. Useful for relative comparisons, not a substitute for a full energy simulation.</p>
+
+      <h2>5. Sources &amp; References</h2>
+      <div class="references-list">
+
+        <div class="ref-card">
+          <span class="ref-type type-library">Software Library</span>
+          <a href="https://github.com/mourner/suncalc" target="_blank" rel="noopener noreferrer">SunCalc.js &mdash; Sun Position Calculator Library</a>
+          <div class="ref-author">Vladimir Agafonkin</div>
+          <p>Open-source JavaScript library implementing solar position algorithms from Meeus's Astronomical Algorithms. Used for all sun position calculations in this tool.</p>
+        </div>
+
+        <div class="ref-card">
+          <span class="ref-type type-book">Reference Book</span>
+          <a href="https://www.willbell.com/math/mc1.htm" target="_blank" rel="noopener noreferrer">Astronomical Algorithms (2nd Edition)</a>
+          <div class="ref-author">Jean Meeus, Willmann-Bell, 1998</div>
+          <p>The standard reference for solar position formulas used by SunCalc.js.</p>
+        </div>
+
+        <div class="ref-card">
+          <span class="ref-type type-standard">Industry Standard</span>
+          <a href="https://www.ashrae.org/technical-resources/ashrae-handbook" target="_blank" rel="noopener noreferrer">ASHRAE Handbook &mdash; Fundamentals, Chapter 15: Fenestration</a>
+          <div class="ref-author">American Society of Heating, Refrigerating and Air-Conditioning Engineers</div>
+          <p>Industry-standard reference for window solar heat gain calculations, shading geometry (HSA, VSA), and the Projection Factor method used in energy codes.</p>
+        </div>
+
+        <div class="ref-card">
+          <span class="ref-type type-report">Technical Report</span>
+          <a href="https://windows.lbl.gov/sites/default/files/lbnl-2001057.pdf" target="_blank" rel="noopener noreferrer">Calculating the Effect of External Shading on the SHGC of Windows</a>
+          <div class="ref-author">Kohler, Shukla, and Rawal &mdash; Lawrence Berkeley National Laboratory (LBNL-2001057)</div>
+          <p>Proposes the adjusted SHGC methodology for quantifying how awnings affect window solar heat gain.</p>
+        </div>
+
+        <div class="ref-card">
+          <span class="ref-type type-report">Technical Report</span>
+          <a href="https://rredc.nrel.gov/solar/pubs/bluebook/" target="_blank" rel="noopener noreferrer">Solar Radiation Data Manual for Buildings (NREL/TP-463-7904)</a>
+          <div class="ref-author">National Renewable Energy Laboratory (NREL)</div>
+          <p>The "Blue Book" &mdash; provides shading geometry data for 239 U.S. stations using dimensionless overhang ratios. The same geometric methodology is applied to all vertical window orientations. Notes that <em>"overhangs are not particularly effective"</em> for east- and west-facing windows, recommending supplementary vertical louvers.</p>
+        </div>
+
+        <div class="ref-card">
+          <span class="ref-type type-standard">Industry Standard</span>
+          <a href="https://www.ashrae.org/technical-resources/bookstore/standard-90-1" target="_blank" rel="noopener noreferrer">ASHRAE Standard 90.1 &mdash; Energy Standard for Buildings</a>
+          <div class="ref-author">American Society of Heating, Refrigerating and Air-Conditioning Engineers</div>
+          <p>Defines the Projection Factor method (Table 5.5.4.4.1) for SHGC credits from overhangs. Treats all non-north orientations identically in PF multiplier tables &mdash; the basis for this tool's orientation-independent geometric calculation.</p>
+        </div>
+
+        <div class="ref-card">
+          <span class="ref-type type-guide">Design Guide</span>
+          <a href="https://basc.pnnl.gov/resource-guides/shading-and-solar-control-windows-and-skylights" target="_blank" rel="noopener noreferrer">Shading and Solar Control for Windows</a>
+          <div class="ref-author">Building America Solution Center (PNNL / U.S. DOE)</div>
+          <p>Best practices for window shading by orientation. Notes that deep horizontal shading over E/W windows blocks sun in both summer and winter, and recommends supplementing with operable shading strategies.</p>
+        </div>
+
+        <div class="ref-card">
+          <span class="ref-type type-guide">Design Guide</span>
+          <a href="https://www.wbdg.org/resources/sun-control-and-shading-devices" target="_blank" rel="noopener noreferrer">Sun Control and Shading Devices</a>
+          <div class="ref-author">Whole Building Design Guide (WBDG) &mdash; National Institute of Building Sciences</div>
+          <p>Comprehensive overview of shading strategies for buildings, including fixed overhangs and orientation-specific design recommendations.</p>
+        </div>
+
+        <div class="ref-card">
+          <span class="ref-type type-guide">Design Guide</span>
+          <a href="https://unhabitat.org/sites/default/files/2020/06/gh049e_compressed.pdf" target="_blank" rel="noopener noreferrer">Sun Shading Catalogue</a>
+          <div class="ref-author">UN-Habitat</div>
+          <p>Detailed reference on horizontal and vertical shadow angle geometry, shading device design for various climates.</p>
+        </div>
+
+        <div class="ref-card">
+          <span class="ref-type type-industry">Industry Resource</span>
+          <a href="https://www.archlouvers.com/How_Sunshades_Work.htm" target="_blank" rel="noopener noreferrer">How Sunshades Work</a>
+          <div class="ref-author">Architectural Louvers Company</div>
+          <p>Practical guide to sunshade sizing by orientation, with worked examples using solar altitude and azimuth angles.</p>
+        </div>
+
+        <div class="ref-card">
+          <span class="ref-type type-academic">Academic Reference</span>
+          <a href="https://pages.mtu.edu/~jstallen/courses/MEEM4200/lectures/solar/Arici_Chp_VII.pdf" target="_blank" rel="noopener noreferrer">Solar Shading Calculations and Design of Overhangs</a>
+          <div class="ref-author">Arici &mdash; Michigan Technological University (MEEM 4200 Course Notes, Ch. 7.4)</div>
+          <p>Textbook-style derivation of overhang shading geometry including shadow projection formulas.</p>
+        </div>
+
+        <div class="ref-card">
+          <span class="ref-type type-industry">Industry Article</span>
+          <a href="https://browningday.com/news/gauging-the-impact-of-exterior-shading-using-the-projection-factor/" target="_blank" rel="noopener noreferrer">Impact of Exterior Shading Using the Projection Factor</a>
+          <div class="ref-author">Browning Day Architects</div>
+          <p>Explains the ASHRAE 90.1 Projection Factor definition and its use in building energy code compliance.</p>
+        </div>
+
+        <div class="ref-card">
+          <span class="ref-type type-tool">Existing Tool</span>
+          <a href="https://susdesign.com/overhang_recs/" target="_blank" rel="noopener noreferrer">Overhang Design Recommendations</a>
+          <div class="ref-author">Sustainable by Design (Christopher Gronbeck)</div>
+          <p>Overhang depth and gap lookup tables by latitude and climate type (Warm/Mixed/Cool), derived from the NREL Solar Radiation Data Manual. The Optimize Awning algorithm in this tool is calibrated against these recommendations.</p>
+        </div>
+
+        <div class="ref-card">
+          <span class="ref-type type-tool">Existing Tool</span>
+          <a href="https://susdesign.com/overhang_annual/" target="_blank" rel="noopener noreferrer">Overhang Annual Analysis</a>
+          <div class="ref-author">Sustainable by Design (Christopher Gronbeck)</div>
+          <p>Web-based overhang shading calculator. An inspiration for the annual analysis feature in this tool.</p>
+        </div>
+
+        <div class="ref-card">
+          <span class="ref-type type-tool">Existing Tool</span>
+          <a href="https://www.insol.co.nz/overhang-annual-analysis-shading-calculators" target="_blank" rel="noopener noreferrer">Overhang Annual Analysis Shading Calculators</a>
+          <div class="ref-author">Insol Ltd.</div>
+          <p>Web-based tool for calculating hourly and annual window shading by horizontal overhangs.</p>
+        </div>
+
+        <div class="ref-card">
+          <span class="ref-type type-concept">Conceptual Reference</span>
+          <a href="https://en.wikipedia.org/wiki/Celestial_sphere" target="_blank" rel="noopener noreferrer">The Celestial Sphere &mdash; Observer-Centric Model</a>
+          <div class="ref-author">Various (standard astronomical concept)</div>
+          <p>The celestial hemisphere visualization is based on the observer-centric celestial sphere model used in astronomy and solar energy analysis.</p>
+        </div>
+
+        <div class="ref-card">
+          <span class="ref-type type-library">Software Library</span>
+          <a href="https://threejs.org/docs/#api/en/lights/DirectionalLight" target="_blank" rel="noopener noreferrer">Three.js Documentation</a>
+          <div class="ref-author">Three.js / mrdoob</div>
+          <p>Documentation for the 3D rendering engine used for the room visualization.</p>
+        </div>
+
+      </div>
+
+      <h2>6. Assumptions &amp; Limitations</h2>
+      <ul class="limitations-list">
+        <li><strong>Direct beam radiation only.</strong> The shading calculations apply to direct sunlight. Diffuse radiation from the sky and ground-reflected light are not fully modeled &mdash; in reality, overhangs block roughly 30&ndash;50% of diffuse radiation depending on geometry.</li>
+        <li><strong>Clear-sky assumption.</strong> Solar intensity estimates assume clear-sky conditions (~1000 W/m&sup2; direct normal). Cloud cover, atmospheric haze, and local obstructions (trees, neighboring buildings) are not modeled.</li>
+        <li><strong>Horizontal overhang only.</strong> This tool models flat, horizontal awnings. Tilted awnings, curved awnings, louvered shading, and vertical fins are not supported.</li>
+        <li><strong>No thermal mass or HVAC interaction.</strong> The tool estimates solar heat gain at the window but does not simulate the full building energy balance.</li>
+        <li><strong>Simplified SHGC.</strong> The effective SHGC calculation uses a simple direct-beam shading fraction. For code-compliant energy analysis, use EnergyPlus or similar with TMY weather data.</li>
+        <li><strong>No terrain or obstructions.</strong> The tool assumes a flat horizon with no neighboring buildings, trees, or terrain blocking the sun.</li>
+        <li><strong>Approximate floor/wall light patterns.</strong> The sunlight patch visualization shows the approximate shape and position of direct sunlight but does not model reflection, scattering, or interior surface properties.</li>
+      </ul>
+
+      <h2>7. Open Source</h2>
+      <p>This tool is open source under the <strong>MIT License</strong>.</p>
+      <p><a href="https://github.com/USERNAME/awning-shading-simulator" target="_blank" rel="noopener noreferrer">View on GitHub</a> &mdash; Contributions and issue reports welcome.</p>
+      <p>Built with:</p>
+      <ul>
+        <li><a href="https://github.com/mourner/suncalc" target="_blank" rel="noopener noreferrer">SunCalc.js</a> by Vladimir Agafonkin (BSD-2-Clause)</li>
+        <li><a href="https://threejs.org/" target="_blank" rel="noopener noreferrer">Three.js</a> (MIT License)</li>
+      </ul>
+
+    </div><!-- /methods-content -->
+  </div><!-- /methods-tab -->
+
+  <!-- ─── FOOTER ───────────────────────────────────────────────────── -->
+  <footer id="app-footer">
+    <div class="footer-inner">
+      <div>
+        <strong style="color:#c9a96e;">The Power of Shading</strong> &mdash; Awning Solar Shading Simulator
+      </div>
+      <div class="footer-credits">
+        Built by David Coffey &nbsp;&bull;&nbsp;
+        Powered by <a href="https://threejs.org/" target="_blank" rel="noopener noreferrer">Three.js</a> &amp;
+        <a href="https://github.com/mourner/suncalc" target="_blank" rel="noopener noreferrer">SunCalc.js</a>
+        &nbsp;&bull;&nbsp; MIT License
+      </div>
+    </div>
+  </footer>
+
+  <!-- ─── CDN Libraries ────────────────────────────────────────────── -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/suncalc/1.9.0/suncalc.min.js"></script>
+
+  <!-- ─── Application (loaded in dependency order) ─────────────────── -->
+  <script src="js/solarEngine.js?v=28"></script>
+  <script src="js/orbitCamera.js?v=28"></script>
+  <script src="js/crossSection.js?v=28"></script>
+  <script src="js/metricsPanel.js?v=28"></script>
+  <script src="js/heatmap.js?v=28"></script>
+  <script src="js/uiControls.js?v=28"></script>
+  <script src="js/starData.js?v=28"></script>
+  <script src="js/scene3d.js?v=28"></script>
+  <script src="js/main.js?v=28"></script>
+
+</body>
+</html>
